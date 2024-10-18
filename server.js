@@ -6,7 +6,8 @@ if (process.env.NODE_ENV != "production") {
 // Import dependencies
 const express = require('express');
 const connectDb = require('./connectDb/connectDb');
-const Note = require("./models/note");
+const controller = require("./controller/controller");
+const cors = require("cors");
 
 // Create an Express app
 const app = express();
@@ -15,6 +16,7 @@ const PORT = process.env.PORT || 3000;
 //configure express app
 // app.use(express.json());
 app.use(express.json());
+app.use(cors());
 
 // Connect to the database
 connectDb();
@@ -26,45 +28,21 @@ app.get('/', (req, res) => {
     res.json("Welcome");
 });
 
-//Fetch all data 
-app.get('/notes', async(req,res)=>{
-    //Find the notes
-    const notes = await Note.find();
-    //Respond with them
-    res.json({notes:notes});
-    console.log(notes);
-})
+ //Creat a data
+app.post('/notes',controller.createNote );
 
-//Fetch a particular data
- app.get('/notes/:id',async (req,res)=>{
-    //Get the id of the url
-    const noteId = req.params.id;
+//Read all data 
+app.get('/notes',controller.readAll )
 
-    //Find the data for the id
-    const note = await Note.findById(noteId);
-    //respond data for the particular id 
-    res.json({note:note});
- });
+//Read a particular data
+app.get('/notes/:id',controller.readOne);
 
-app.post('/notes', async (req, res) => {
-    try {
-        console.log(req.body);
-        const title = req.body.title;
-        const body = req.body.body;
+//Update a data
+app.put('/notes/:id' ,controller.updateNote);
 
-        // Create a new note
-        const note = await Note.create({
-            title: title,
-            body: body,
-        });
+//Detete a data
+app.delete('/notes/:id',controller.deleteNote);
 
-        // Respond with the new note
-        res.json({ note: note });
-    } catch (error) {
-        console.error('Error in POST /notes:', error);
-        res.status(500).json({ error: 'Internal Server Error' });
-    }
-});
 
 
 
